@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 final _firestore = Firestore.instance;
+FirebaseUser loggedInUser;
 
 class ChatScreen extends StatefulWidget {
   static String id = 'chat';
@@ -15,7 +16,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _auth = FirebaseAuth.instance;
   final TextEditingController textEditingController = TextEditingController();
-  FirebaseUser loggedInUser;
+
   String messageText;
 
   void initState() {
@@ -124,9 +125,11 @@ class MessageStream extends StatelessWidget {
         for (var message in messages) {
           final messageText = message['text'];
           final messageSender = message['sender'];
+          final currentUser = loggedInUser.email;
           final messageBubble = MessageBubble(
             text: messageText,
             sender: messageSender,
+            isMe: currentUser == messageSender,
           );
           messageBubbles.add(messageBubble);
         }
@@ -146,16 +149,18 @@ class MessageStream extends StatelessWidget {
 }
 
 class MessageBubble extends StatelessWidget {
-  MessageBubble({this.text, this.sender});
+  MessageBubble({this.text, this.sender, this.isMe});
   final String text;
   final String sender;
+  final bool isMe;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
           Text(
             sender,
@@ -165,9 +170,14 @@ class MessageBubble extends StatelessWidget {
             ),
           ),
           Material(
-            color: Colors.lightBlueAccent,
+            color: isMe ? Colors.lightBlueAccent : Colors.white,
             elevation: 5,
-            borderRadius: BorderRadius.circular(30.0),
+            borderRadius: BorderRadius.only(
+              topRight: isMe ? Radius.zero : Radius.circular(30.0),
+              topLeft: isMe ? Radius.circular(30.0) : Radius.zero,
+              bottomLeft: Radius.circular(30.0),
+              bottomRight: Radius.circular(30.0),
+            ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 20.0,
@@ -175,7 +185,9 @@ class MessageBubble extends StatelessWidget {
               ),
               child: Text(
                 text,
-                style: TextStyle(fontSize: 15.0, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 15.0,
+                    color: isMe ? Colors.white : Colors.black54),
               ),
             ),
           ),
