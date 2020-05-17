@@ -14,9 +14,16 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _auth = FirebaseAuth.instance;
+  final focus = FocusNode();
   bool showSpinner = false;
   String email;
   String password;
+
+  @override
+  void dispose() {
+    focus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +49,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               SizedBox(
                 height: 48.0,
               ),
-              TextField(
+              TextFormField(
                 style: TextStyle(
                   color: Colors.black,
                 ),
@@ -53,11 +60,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 decoration: kTextFieldDecoration.copyWith(
                   hintText: 'Enter your email',
                 ),
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (e) {
+                  FocusScope.of(context).nextFocus();
+                },
               ),
               SizedBox(
                 height: 8.0,
               ),
-              TextField(
+              TextFormField(
+                focusNode: focus,
                 style: TextStyle(
                   color: Colors.black,
                 ),
